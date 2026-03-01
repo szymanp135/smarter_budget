@@ -1,29 +1,31 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconpicker/Models/configuration.dart';
 import 'package:flutter_iconpicker/flutter_iconpicker.dart';
+import 'package:smart_budget/models/category.dart';
 import 'package:smart_budget/providers/app_settings_provider.dart';
 import 'package:smart_budget/providers/category_provider.dart';
 import 'package:smart_budget/widgets/common/color_picker.dart';
 
-Future<void> showAddCategoryDialog(
-  BuildContext context,
-  AppSettingsProvider settings,
-  CategoryProvider categoryProvider,
-) async {
+Future<void> showCategoryFormDialog({
+  required BuildContext context,
+  required AppSettingsProvider settings,
+  required CategoryProvider categoryProvider,
+  BudgetCategory? category,
+}) async {
   void Function(void Function())? dialogSetState;
 
   // name input stuff
-  String initialValue = '';
+  String initialValue = category?.displayName ?? '';
   String? errorText;
   final nameController = TextEditingController(text: initialValue);
 
   // color picker stuff
-  Color pickerColor = Colors.blue;
+  Color pickerColor = Color(category?.colorValue ?? Colors.blue.toARGB32());
 
   // icon picker stuff
-  IconPickerIcon? pickerIcon;
-  const _defaultIconData = Icons.attach_money_rounded;
+  final codePoint =
+      category?.iconCodePoint ?? Icons.attach_money_rounded.codePoint;
+  IconData pickerIcon = IconData(codePoint, fontFamily: 'MaterialIcons');
 
   // category type stuff
   CategoryType categoryType = CategoryType.income;
@@ -39,10 +41,7 @@ Future<void> showAddCategoryDialog(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                settings.t('category_enter_name'),
-                //style: const TextStyle(fontSize: 13, color: Colors.grey),
-              ),
+              Text(settings.t('category_enter_name')),
               const SizedBox(height: 16),
               TextField(
                 controller: nameController,
@@ -93,18 +92,18 @@ Future<void> showAddCategoryDialog(
                   const SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: () async {
-                      pickerIcon = await showIconPicker(
+                      final localPickerIcon = await showIconPicker(
                         context,
                         configuration: SinglePickerConfiguration(
                           iconPackModes: [IconPack.roundedMaterial],
                         ),
                       );
-                      setState(() => {});
+                      if (localPickerIcon != null) {
+                        pickerIcon = localPickerIcon.data;
+                        setState(() => {});
+                      }
                     },
-                    child: Icon(
-                      pickerIcon?.data ?? Icons.attach_money_rounded,
-                      color: pickerColor,
-                    ),
+                    child: Icon(pickerIcon, color: pickerColor),
                   ),
                 ],
               ),
@@ -150,26 +149,38 @@ Future<void> showAddCategoryDialog(
         ElevatedButton(
           onPressed: () {
             dialogSetState?.call(() {
-              if (nameController.text.trim().isEmpty) {
-                errorText = settings.t('warning_empty_text_field');
-                return;
-              } else if (categoryProvider.categoryNameExists(
-                nameController.text.trim(),
-              )) {
-                errorText = settings.t('warning_such_category_exists');
-                return;
-              }
+              if (category == null) {
+                if (nameController.text.trim().isEmpty) {
+                  errorText = settings.t('warning_empty_text_field');
+                  return;
+                } else if (categoryProvider.categoryNameExists(
+                  nameController.text.trim(),
+                )) {
+                  errorText = settings.t('warning_such_category_exists');
+                  return;
+                }
 
-              categoryProvider.addCategory(
-                displayName: nameController.text,
-                icon: pickerIcon?.data ?? _defaultIconData,
-                color: pickerColor,
-                type: categoryType.name.toLowerCase(),
-              );
+                categoryProvider.addCategory(
+                  displayName: nameController.text,
+                  icon: pickerIcon,
+                  color: pickerColor,
+                  type: categoryType.name.toLowerCase(),
+                );
+              } else {
+                categoryProvider.updateCategory(
+                  oldCategory: category,
+                  newDisplayName: nameController.text,
+                  newIconData: pickerIcon,
+                  newColor: pickerColor,
+                  newType: categoryType,
+                );
+              }
               Navigator.pop(ctx);
             });
           },
-          child: Text(settings.t('add')),
+          child: category == null
+              ? Text(settings.t('add'))
+              : Text(settings.t('save')),
         ),
       ],
     ),

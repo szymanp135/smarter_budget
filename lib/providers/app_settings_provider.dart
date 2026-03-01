@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants.dart';
 import 'user_provider.dart';
 
 enum AppTheme { light, dark }
@@ -269,7 +270,7 @@ class AppSettingsProvider extends ChangeNotifier {
     'undo': 'Cofnij',
     'credits_header': 'Autorzy',
     'credits':
-        'Autor: Aleksandra Zawadka\nKontrybucja: Paweł Szymański\nWersja 1.260228.0',
+        'Autor: Aleksandra Zawadka\nKontrybucja: Paweł Szymański\nWersja $appVersion',
     'categories': 'Kategorie',
     'category_manager': 'Menadżer Kategorii',
     'categories_uninitialized': 'Kategorie nie zostały wczytane',
@@ -385,7 +386,7 @@ class AppSettingsProvider extends ChangeNotifier {
     'undo': 'Undo',
     'credits_header': 'Credits',
     'credits':
-        'Author: Aleksandra Zawadka\nContribution: Paweł Szymański\nVersion 1.260228.0',
+        'Author: Aleksandra Zawadka\nContribution: Paweł Szymański\nVersion $appVersion',
     'categories': 'Categories',
     'category_manager': 'Category Manager',
     'categories_uninitialized': "Categories couldn't initialize",

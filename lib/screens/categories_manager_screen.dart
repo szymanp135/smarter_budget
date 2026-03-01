@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:smart_budget/models/category.dart';
 import 'package:smart_budget/providers/category_provider.dart';
 import 'package:smart_budget/providers/user_provider.dart';
-import 'package:smart_budget/widgets/categories/category_add_dialog.dart';
+import 'package:smart_budget/widgets/categories/category_form_dialog.dart';
 
 import '../providers/app_settings_provider.dart';
 import '../widgets/categories/category_list_item.dart';
@@ -48,32 +48,65 @@ class CategoriesManagerScreen extends StatelessWidget {
     );
   }
 
-  void deleteCategory(
-    CategoryProvider categoryProvider,
-    BudgetCategory category,
-    UserProvider userProvider,
-  ) {
+  void deleteCategory({
+    required CategoryProvider categoryProvider,
+    required BudgetCategory category,
+    required UserProvider userProvider,
+  }) {
     categoryProvider.deleteCategory(
       categoryId: category.id,
       userProvider: userProvider,
     );
   }
 
-  void onTap(CategoryProvider categoryProvider, BudgetCategory category) {}
+  void onTap({
+    required BuildContext context,
+    required AppSettingsProvider settings,
+    required CategoryProvider categoryProvider,
+    required BudgetCategory category,
+  }) async {
+    await showCategoryFormDialog(
+      context: context,
+      settings: settings,
+      categoryProvider: categoryProvider,
+      category: category,
+    );
+  }
 
-  void onDelete(CategoryProvider categoryProvider, BudgetCategory category) {}
+  void onDelete({
+    required UserProvider userProvider,
+    required CategoryProvider categoryProvider,
+    required BudgetCategory category,
+  }) {
+    deleteCategory(
+      categoryProvider: categoryProvider,
+      category: category,
+      userProvider: userProvider,
+    );
+  }
 
-  Future<bool> onConfirmDismiss(
-    DismissDirection direction,
-    CategoryProvider categoryProvider,
-    UserProvider userProvider,
-    BudgetCategory category,
-  ) async {
+  Future<bool> onConfirmDismiss({
+    required BuildContext context,
+    required AppSettingsProvider settings,
+    required DismissDirection direction,
+    required CategoryProvider categoryProvider,
+    required UserProvider userProvider,
+    required BudgetCategory category,
+  }) async {
     if (direction == DismissDirection.startToEnd) {
-      onTap(categoryProvider, category);
+      onTap(
+        context: context,
+        settings: settings,
+        categoryProvider: categoryProvider,
+        category: category,
+      );
       return false;
     } else if (direction == DismissDirection.endToStart) {
-      deleteCategory(categoryProvider, category, userProvider);
+      deleteCategory(
+        categoryProvider: categoryProvider,
+        category: category,
+        userProvider: userProvider,
+      );
       return true;
     }
     return true;
@@ -90,7 +123,11 @@ class CategoriesManagerScreen extends StatelessWidget {
       appBar: AppBar(title: Text(settings.t('category_manager'))),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await showAddCategoryDialog(context, settings, categories);
+          await showCategoryFormDialog(
+            context: context,
+            settings: settings,
+            categoryProvider: categories,
+          );
         },
         child: const Icon(Icons.add),
       ),
@@ -104,18 +141,30 @@ class CategoriesManagerScreen extends StatelessWidget {
                     return CategoryListItem(
                       category: category,
                       categoryProvider: categories,
-                      onTap: () => onTap(categories, category),
-                      onConfirmDismiss: (dismissDirection) => onConfirmDismiss(
-                        dismissDirection,
-                        categories,
-                        users,
-                        category,
+                      onTap: () => onTap(
+                        context: context,
+                        settings: settings,
+                        categoryProvider: categories,
+                        category: category,
                       ),
-                      onDelete: () => onDelete(categories, category),
+                      onConfirmDismiss: (dismissDirection) => onConfirmDismiss(
+                        context: context,
+                        settings: settings,
+                        direction: dismissDirection,
+                        categoryProvider: categories,
+                        userProvider: users,
+                        category: category,
+                      ),
+                      onDelete: () => onDelete(
+                        categoryProvider: categories,
+                        category: category,
+                        userProvider: users,
+                      ),
                     );
                   },
                   itemCount: categoryBox.values.length,
                 ),
+                SliverToBoxAdapter(child: SizedBox(height: 64)),
               ],
             ),
     );

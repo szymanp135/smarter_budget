@@ -99,8 +99,33 @@ class CategoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateCategory({
+    required BudgetCategory oldCategory,
+    required String newDisplayName,
+    required IconData newIconData,
+    required Color newColor,
+    required CategoryType newType,
+  }) {
+    final box = categoriesBox;
+    if (box == null) {
+      return;
+    }
+
+    final newCategory = BudgetCategory(
+      id: oldCategory.id,
+      displayName: newDisplayName,
+      iconCodePoint: newIconData.codePoint,
+      colorValue: newColor.toARGB32(),
+      type: newType.name.toLowerCase(),
+    );
+
+    final key = getCategoryKey(oldCategory.id);
+    box.put(key, newCategory);
+    notifyListeners();
+  }
+
   bool deleteCategory({
-    required categoryId,
+    required String categoryId,
     required UserProvider userProvider,
   }) {
     final box = categoriesBox;
@@ -109,13 +134,7 @@ class CategoryProvider extends ChangeNotifier {
     }
 
     // find key of category with categoryId
-    dynamic key;
-    for (var k in box.keys) {
-      final category = box.get(k);
-      if (category?.id == categoryId) {
-        key = k;
-      }
-    }
+    final key = getCategoryKey(categoryId);
 
     // check whether transactions with deleting categoryId exist
     // if so then don't delete category
@@ -146,6 +165,23 @@ class CategoryProvider extends ChangeNotifier {
       }
     }
     return false;
+  }
+
+  dynamic getCategoryKey(String categoryId) {
+    final box = categoriesBox;
+    if (box == null) {
+      return null;
+    }
+
+    dynamic key;
+    for (var k in box.keys) {
+      final c = box.get(k);
+      if (c?.id == categoryId) {
+        key = k;
+        break;
+      }
+    }
+    return key;
   }
 
   final Map<String, (String, IconData, Color, String)>
