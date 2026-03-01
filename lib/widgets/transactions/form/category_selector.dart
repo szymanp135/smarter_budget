@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:smart_budget/models/category.dart';
 import '../../../providers/app_settings_provider.dart';
 
 class CategorySelector extends StatelessWidget {
   final String? selectedCategory;
-  final List<String> categoryKeys;
+  final List<BudgetCategory> categories;
   final Function(String?) onChanged;
   final AppSettingsProvider settings;
 
   const CategorySelector({
     super.key,
     required this.selectedCategory,
-    required this.categoryKeys,
+    required this.categories,
     required this.onChanged,
     required this.settings,
   });
@@ -24,21 +25,18 @@ class CategorySelector extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       isExpanded: true,
-      items: categoryKeys.map((catKey) {
+      items: categories.map((cat) {
         return DropdownMenuItem(
-          value: catKey,
+          value: cat.id,
           child: Row(
             children: [
               Icon(
-                settings.getCategoryIcon(catKey),
-                color: settings.getCategoryColor(catKey),
+                IconData(cat.iconCodePoint, fontFamily: 'MaterialIcons'),
+                color: Color(cat.colorValue),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  settings.translateCategory(catKey),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: Text(cat.displayName, overflow: TextOverflow.ellipsis),
               ),
             ],
           ),

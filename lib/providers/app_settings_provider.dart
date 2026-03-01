@@ -113,9 +113,9 @@ class AppSettingsProvider extends ChangeNotifier {
     }
   }
 
-  String translateCategory(String categoryKey) {
+  /*String translateCategory(String categoryKey) {
     return t(categoryKey);
-  }
+  }*/
 
   String getCategoryKey(String translatedName) {
     final map = _language == AppLanguage.pl ? _plStrings : _enStrings;
@@ -127,7 +127,7 @@ class AppSettingsProvider extends ChangeNotifier {
     return translatedName;
   }
 
-  IconData getCategoryIcon(String categoryKey) {
+  /*IconData getCategoryIcon(String categoryKey) {
     switch (categoryKey) {
       case 'Food':
         return Icons.fastfood_rounded;
@@ -183,7 +183,7 @@ class AppSettingsProvider extends ChangeNotifier {
       default:
         return Colors.grey;
     }
-  }
+  }*/
 
   final Map<String, String> _plStrings = {
     'app_name': 'Smarter Budget',

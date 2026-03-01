@@ -1,5 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:smart_budget/providers/category_provider.dart';
 import '../../providers/app_settings_provider.dart';
 
 class StatisticsPieChart extends StatefulWidget {
@@ -65,13 +67,14 @@ class _StatisticsPieChartState extends State<StatisticsPieChart> {
           ),
         ),
         const SizedBox(height: 24),
-        _buildPieLegend(widget.pieData, widget.settings),
+        _buildPieLegend(context, widget.pieData, widget.settings),
         const SizedBox(height: 30),
       ],
     );
   }
 
   Widget _buildPieLegend(
+    BuildContext context,
     List<MapEntry<String, double>> data,
     AppSettingsProvider settings,
   ) {
@@ -109,6 +112,8 @@ class _StatisticsPieChartState extends State<StatisticsPieChart> {
         final index = mapEntry.key;
         final entry = mapEntry.value;
         final rawPercentage = (entry.value / totalSum * 100);
+        final categoryProvider = Provider.of<CategoryProvider>(context);
+        final category = categoryProvider.getCategoryById(entry.key);
 
         String percentageString;
         if (rawPercentage < 0.1 && rawPercentage > 0) {
@@ -117,7 +122,7 @@ class _StatisticsPieChartState extends State<StatisticsPieChart> {
           percentageString = '${finalPercentages[index].toStringAsFixed(1)}%';
         }
 
-        final color = settings.getCategoryColor(entry.key);
+        final color = Color(category?.colorValue ?? Colors.grey.toARGB32());
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
@@ -127,7 +132,11 @@ class _StatisticsPieChartState extends State<StatisticsPieChart> {
                 backgroundColor: color.withValues(alpha: 0.2),
                 radius: 12,
                 child: Icon(
-                  settings.getCategoryIcon(entry.key),
+                  IconData(
+                    category?.iconCodePoint ??
+                        Icons.question_mark_rounded.codePoint,
+                    fontFamily: 'MaterialIcons',
+                  ),
                   size: 14,
                   color: color,
                 ),
@@ -140,7 +149,8 @@ class _StatisticsPieChartState extends State<StatisticsPieChart> {
                     Flexible(
                       flex: 1,
                       child: Text(
-                        settings.translateCategory(entry.key),
+                        category?.displayName ??
+                            'unknown category (id: ${entry.key})',
                         style: const TextStyle(fontSize: 14),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

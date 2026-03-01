@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:smart_budget/models/category.dart';
 import '../../../providers/app_settings_provider.dart';
 
 class TransactionSummary extends StatelessWidget {
   final String type;
-  final String? category;
+  final BudgetCategory? category;
   final String amount;
   final String date;
   final String description;
@@ -42,7 +43,7 @@ class TransactionSummary extends StatelessWidget {
           const Divider(),
           _buildSummaryRow(
             "${settings.t('category')}:",
-            category != null ? settings.translateCategory(category!) : "-",
+            category?.displayName ?? '-',
             null,
           ),
           const Divider(),

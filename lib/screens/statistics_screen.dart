@@ -2,7 +2,9 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_budget/models/category.dart';
 import '../providers/app_settings_provider.dart';
+import '../providers/category_provider.dart';
 import '../providers/user_provider.dart';
 import '../models/transaction.dart';
 import '../widgets/statistics/savings_card.dart';
@@ -147,7 +149,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
               const SizedBox(height: 16),
               StatisticsPieChart(
-                sections: _generatePieSections(pieData, settings),
+                sections: _generatePieSections(context, pieData, settings),
                 pieData: pieData,
                 settings: settings,
                 uniqueKey: '$_selectedRange-$_pieChartType',
@@ -179,13 +181,17 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildPieTooltip(
+    BuildContext context,
     MapEntry<String, double> entry,
     double percentage,
     AppSettingsProvider settings,
   ) {
-    final categoryColor = settings.getCategoryColor(entry.key);
+    final category = Provider.of<CategoryProvider>(
+      context,
+    ).getCategoryById(entry.key);
+    final categoryColor = Color(category?.colorValue ?? Colors.grey.toARGB32());
     return Container(
-      constraints: const BoxConstraints(maxWidth: 120),
+      //constraints: const BoxConstraints(maxWidth: 120),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.blueGrey.shade900.withValues(alpha: 0.95),
@@ -206,7 +212,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            settings.translateCategory(entry.key),
+            category?.displayName ?? 'unknown category',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 13,
@@ -445,6 +451,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   List<PieChartSectionData> _generatePieSections(
+    BuildContext context,
     List<MapEntry<String, double>> data,
     AppSettingsProvider settings,
   ) {
@@ -457,9 +464,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       final radius = isTouched ? 60.0 : 55.0;
 
       final showLabel = percentage > 5;
+      final category = Provider.of<CategoryProvider>(
+        context,
+      ).getCategoryById(entry.key);
 
       return PieChartSectionData(
-        color: settings.getCategoryColor(entry.key),
+        color: Color(category?.colorValue ?? Colors.grey.toARGB32()),
         value: entry.value,
         title: showLabel && !isTouched
             ? '${percentage.toStringAsFixed(1)}%'
@@ -472,7 +482,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           shadows: [Shadow(color: Colors.black26, blurRadius: 2)],
         ),
         badgeWidget: isTouched
-            ? _buildPieTooltip(entry, percentage, settings)
+            ? _buildPieTooltip(context, entry, percentage, settings)
             : null,
         badgePositionPercentageOffset: 1.3,
       );

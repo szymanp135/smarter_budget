@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
+import 'package:provider/provider.dart';
+import 'package:smart_budget/providers/category_provider.dart';
 import '../../models/transaction.dart';
 import '../../providers/app_settings_provider.dart';
 
@@ -24,9 +26,12 @@ class TransactionListItem extends StatelessWidget {
     final converted = settings.convertAmount(transaction.amount);
     final symbol = settings.currencySymbol();
     final isIncome = transaction.type == "income";
+    final category = Provider.of<CategoryProvider>(
+      context,
+    ).getCategoryById(transaction.categoryId);
 
-    final String displayTitle = transaction.title.isEmpty
-        ? settings.translateCategory(transaction.categoryId)
+    final String displayTitle = transaction.title.isEmpty && category != null
+        ? category.displayName
         : transaction.title;
 
     final bool showSubtitle = transaction.title.isNotEmpty;
@@ -58,7 +63,11 @@ class TransactionListItem extends StatelessWidget {
                     ? Colors.green.withValues(alpha: 0.1)
                     : Colors.red.withValues(alpha: 0.1),
                 child: Icon(
-                  settings.getCategoryIcon(transaction.categoryId),
+                  IconData(
+                    category?.iconCodePoint ??
+                        Icons.question_mark_rounded.codePoint,
+                    fontFamily: 'MaterialIcons',
+                  ),
                   color: isIncome ? Colors.green : Colors.red,
                 ),
               ),
@@ -77,7 +86,7 @@ class TransactionListItem extends StatelessWidget {
                     ),
                     if (showSubtitle)
                       Text(
-                        settings.translateCategory(transaction.categoryId),
+                        category?.displayName ?? 'unknown category',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey[600],
                         ),

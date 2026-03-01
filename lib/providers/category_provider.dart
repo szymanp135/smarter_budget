@@ -184,6 +184,25 @@ class CategoryProvider extends ChangeNotifier {
     return key;
   }
 
+  BudgetCategory? getCategoryById(String categoryId) {
+    final box = categoriesBox;
+    if (box == null) {
+      return null;
+    }
+
+    final key = getCategoryKey(categoryId);
+    return box.get(key);
+  }
+
+  BudgetCategory? getCategoryByKey(dynamic categoryKey) {
+    final box = categoriesBox;
+    if (box == null) {
+      return null;
+    }
+
+    return box.get(categoryKey);
+  }
+
   final Map<String, (String, IconData, Color, String)>
   _categoryInitialDatabase = {
     'salary': (

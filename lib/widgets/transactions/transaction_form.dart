@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:smart_budget/models/category.dart';
+import 'package:smart_budget/providers/category_provider.dart';
 import '../../models/transaction.dart';
 import '../../providers/app_settings_provider.dart';
 import 'form/transaction_type_selector.dart';
@@ -13,6 +15,7 @@ class TransactionForm extends StatefulWidget {
   final Function(Transaction) onSubmit;
   final String titleKey;
   final String buttonKey;
+  final CategoryProvider categoryProvider;
 
   const TransactionForm({
     super.key,
@@ -20,6 +23,7 @@ class TransactionForm extends StatefulWidget {
     required this.onSubmit,
     required this.titleKey,
     required this.buttonKey,
+    required this.categoryProvider,
   });
 
   @override
@@ -32,27 +36,13 @@ class _TransactionFormState extends State<TransactionForm> {
   final _step2Key = GlobalKey<FormState>();
 
   late String type;
-  String? category;
+  String? categoryId;
   late TextEditingController amountController;
   late TextEditingController descriptionController;
   late DateTime _selectedDate;
 
-  final List<String> expenseCategoryKeys = [
-    'Food',
-    'Transport',
-    'Shopping',
-    'Bills',
-    'Entertainment',
-    'OtherExpense',
-  ];
-
-  final List<String> incomeCategoryKeys = [
-    'Salary',
-    'Gift',
-    'Bonus',
-    'Investment',
-    'OtherIncome',
-  ];
+  late List<BudgetCategory> expenseCategories;
+  late List<BudgetCategory> incomeCategories;
 
   @override
   void initState() {
@@ -78,20 +68,32 @@ class _TransactionFormState extends State<TransactionForm> {
       text: widget.transaction?.title ?? '',
     );
 
+    final box = widget.categoryProvider.categoriesBox;
+    if (box != null) {
+      incomeCategories = box.values
+          .where((cat) => cat.type == 'income')
+          .toList();
+      expenseCategories = box.values
+          .where((cat) => cat.type == 'expense')
+          .toList();
+    }
+
     if (widget.transaction != null) {
-      final savedCategory = widget.transaction!.categoryId;
+      final savedCategoryId = widget.transaction!.categoryId;
       final currentList = type == "expense"
-          ? expenseCategoryKeys
-          : incomeCategoryKeys;
-      if (currentList.contains(savedCategory)) {
-        category = savedCategory;
+          ? expenseCategories
+          : incomeCategories;
+      if (currentList.contains(savedCategoryId)) {
+        categoryId = savedCategoryId;
       } else {
         try {
-          category = currentList.firstWhere(
-            (cat) => cat.toLowerCase() == savedCategory.toLowerCase(),
-          );
+          categoryId = currentList
+              .firstWhere(
+                (cat) => cat.id.toLowerCase() == savedCategoryId.toLowerCase(),
+              )
+              .id;
         } catch (e) {
-          category = null;
+          categoryId = null;
         }
       }
     }
@@ -141,7 +143,7 @@ class _TransactionFormState extends State<TransactionForm> {
       title: finalTitle,
       amount: baseAmount,
       date: _selectedDate,
-      categoryId: category!,
+      categoryId: categoryId!,
       type: type,
     );
     widget.onSubmit(tx);
@@ -152,12 +154,14 @@ class _TransactionFormState extends State<TransactionForm> {
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
     final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    final List<String> currentCategoryKeys = type == "expense"
-        ? expenseCategoryKeys
-        : incomeCategoryKeys;
+    final List<BudgetCategory> currentCategoryKeys = type == "expense"
+        ? expenseCategories
+        : incomeCategories;
+    final categoryProvider = Provider.of<CategoryProvider>(context);
 
-    if (category != null && !currentCategoryKeys.contains(category)) {
-      category = null;
+    if (categoryId != null &&
+        !currentCategoryKeys.any((cat) => cat.id == categoryId)) {
+      categoryId = null;
     }
 
     return Scaffold(
@@ -322,7 +326,7 @@ class _TransactionFormState extends State<TransactionForm> {
                                 onTypeChanged: (val) {
                                   setState(() {
                                     type = val;
-                                    category = null;
+                                    categoryId = null;
                                   });
                                 },
                                 isNarrowScreen: isNarrowScreen,
@@ -331,10 +335,10 @@ class _TransactionFormState extends State<TransactionForm> {
                               ),
                               const SizedBox(height: 24),
                               CategorySelector(
-                                selectedCategory: category,
-                                categoryKeys: currentCategoryKeys,
+                                selectedCategory: categoryId,
+                                categories: currentCategoryKeys,
                                 onChanged: (val) =>
-                                    setState(() => category = val),
+                                    setState(() => categoryId = val),
                                 settings: settings,
                               ),
                             ],
@@ -405,7 +409,9 @@ class _TransactionFormState extends State<TransactionForm> {
                         state: StepState.indexed,
                         content: TransactionSummary(
                           type: type,
-                          category: category,
+                          category: categoryProvider.getCategoryById(
+                            categoryId ?? '',
+                          ),
                           amount: amountController.text,
                           date: formattedDate,
                           description: descriptionController.text.isEmpty
