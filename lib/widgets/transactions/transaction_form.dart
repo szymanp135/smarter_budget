@@ -83,7 +83,9 @@ class _TransactionFormState extends State<TransactionForm> {
       final currentList = type == "expense"
           ? expenseCategories
           : incomeCategories;
-      if (currentList.contains(savedCategoryId)) {
+      if (currentList.contains(
+        widget.categoryProvider.getCategoryById(savedCategoryId),
+      )) {
         categoryId = savedCategoryId;
       } else {
         try {
