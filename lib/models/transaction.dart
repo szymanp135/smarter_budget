@@ -17,7 +17,7 @@ class Transaction {
   final DateTime date;
 
   @HiveField(4)
-  final String category;
+  final String categoryId;
 
   @HiveField(5)
   final String type;
@@ -27,7 +27,7 @@ class Transaction {
     required this.title,
     required this.amount,
     required this.date,
-    required this.category,
+    required this.categoryId,
     required this.type,
   });
 }

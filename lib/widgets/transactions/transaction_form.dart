@@ -79,7 +79,7 @@ class _TransactionFormState extends State<TransactionForm> {
     );
 
     if (widget.transaction != null) {
-      final savedCategory = widget.transaction!.category;
+      final savedCategory = widget.transaction!.categoryId;
       final currentList = type == "expense"
           ? expenseCategoryKeys
           : incomeCategoryKeys;
@@ -141,7 +141,7 @@ class _TransactionFormState extends State<TransactionForm> {
       title: finalTitle,
       amount: baseAmount,
       date: _selectedDate,
-      category: category!,
+      categoryId: category!,
       type: type,
     );
     widget.onSubmit(tx);

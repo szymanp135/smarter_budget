@@ -435,7 +435,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     for (var tx in txs) {
       final amount = settings.convertAmount(tx.amount);
       categoryTotals.update(
-        tx.category,
+        tx.categoryId,
         (val) => val + amount,
         ifAbsent: () => amount,
       );

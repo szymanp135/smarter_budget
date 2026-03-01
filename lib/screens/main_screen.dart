@@ -33,7 +33,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.person),
+                icon: const Icon(Icons.settings),
                 onPressed: () {
                   Navigator.push(
                     context,

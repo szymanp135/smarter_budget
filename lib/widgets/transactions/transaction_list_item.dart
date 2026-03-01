@@ -26,7 +26,7 @@ class TransactionListItem extends StatelessWidget {
     final isIncome = transaction.type == "income";
 
     final String displayTitle = transaction.title.isEmpty
-        ? settings.translateCategory(transaction.category)
+        ? settings.translateCategory(transaction.categoryId)
         : transaction.title;
 
     final bool showSubtitle = transaction.title.isNotEmpty;
@@ -58,7 +58,7 @@ class TransactionListItem extends StatelessWidget {
                     ? Colors.green.withValues(alpha: 0.1)
                     : Colors.red.withValues(alpha: 0.1),
                 child: Icon(
-                  settings.getCategoryIcon(transaction.category),
+                  settings.getCategoryIcon(transaction.categoryId),
                   color: isIncome ? Colors.green : Colors.red,
                 ),
               ),
@@ -77,7 +77,7 @@ class TransactionListItem extends StatelessWidget {
                     ),
                     if (showSubtitle)
                       Text(
-                        settings.translateCategory(transaction.category),
+                        settings.translateCategory(transaction.categoryId),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey[600],
                         ),

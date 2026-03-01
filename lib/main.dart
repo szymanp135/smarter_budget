@@ -4,7 +4,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:smart_budget/providers/category_provider.dart';
 
+import 'models/category.dart';
 import 'models/transaction.dart';
 import 'models/user.dart';
 import 'models/enums_adapters.dart';
@@ -25,6 +27,7 @@ void main() async {
   Hive.registerAdapter(AppThemeAdapter());
   Hive.registerAdapter(AppLanguageAdapter());
   Hive.registerAdapter(AppCurrencyAdapter());
+  Hive.registerAdapter(BudgetCategoryAdapter());
 
   await Hive.openBox('users');
 
@@ -32,6 +35,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
 
         ChangeNotifierProxyProvider<UserProvider, AppSettingsProvider>(
           create: (context) {
@@ -39,11 +43,15 @@ void main() async {
               context,
               listen: false,
             );
+            final categoryProvider = Provider.of<CategoryProvider>(
+              context,
+              listen: false,
+            );
             final settings = AppSettingsProvider(userProvider);
 
             userProvider.init(settings);
-
             userProvider.loadLastUser();
+            categoryProvider.init(userProvider);
 
             return settings;
           },

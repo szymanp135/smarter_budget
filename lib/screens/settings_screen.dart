@@ -6,10 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:smart_budget/providers/category_provider.dart';
+import 'package:smart_budget/screens/categories_manager_screen.dart';
 
 import '../providers/app_settings_provider.dart';
 import '../providers/user_provider.dart';
 import '../screens/login_screen.dart';
+import '../widgets/common/section_credits.dart';
 import '../widgets/common/section_header.dart';
 import '../widgets/settings/settings_tile.dart';
 
@@ -19,15 +22,23 @@ class SettingsScreen extends StatelessWidget {
   Future<void> _exportCSV(
     BuildContext context,
     UserProvider userProv,
+    CategoryProvider categoryProv,
     AppSettingsProvider settings,
   ) async {
     final transactions = userProv.transactionsBox?.values.toList() ?? [];
+    final categories = categoryProv.categoriesBox?.values.toList() ?? [];
 
     if (transactions.isEmpty) {
       final msg = settings.t('no_transactions');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
       return;
     }
+    if (categories.isEmpty) {
+      final msg = settings.t('no_categories');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      return;
+    }
+    // TODO: add exporting categories to csv file
 
     try {
       List<List<dynamic>> rows = [];
@@ -43,7 +54,7 @@ class SettingsScreen extends StatelessWidget {
         rows.add([
           DateFormat('yyyy-MM-dd').format(tx.date),
           tx.title,
-          settings.t(tx.category),
+          settings.t(tx.categoryId),
           settings.t(tx.type),
           tx.amount,
         ]);
@@ -56,7 +67,7 @@ class SettingsScreen extends StatelessWidget {
 
       final now = DateTime.now();
       final fileName =
-          'smart_budget_${DateFormat('yyyyMMdd_HHmmss').format(now)}';
+          'smarter_budget_${DateFormat('yyyyMMdd_HHmmss').format(now)}';
       String savedPath = "";
 
       if (Platform.isAndroid) {
@@ -106,6 +117,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
     final userProv = Provider.of<UserProvider>(context);
+    final categoryProv = Provider.of<CategoryProvider>(context);
     final cardColor = Theme.of(
       context,
     ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
@@ -270,6 +282,29 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
+              SectionHeader(title: settings.t('categories')),
+              Card(
+                color: cardColor,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: SettingsTile(
+                  icon: Icons.category_rounded,
+                  title: settings.t('manage_categories'),
+                  subtitle: settings.t('manage_categories_subtext'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CategoriesManagerScreen(),
+                      ),
+                    ),
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
               SectionHeader(title: settings.t('data_section')),
               Card(
                 color: cardColor,
@@ -282,9 +317,13 @@ class SettingsScreen extends StatelessWidget {
                   title: settings.t('save_csv'),
                   subtitle: settings.t('download_history'),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () => _exportCSV(context, userProv, settings),
+                  onTap: () =>
+                      _exportCSV(context, userProv, categoryProv, settings),
                 ),
               ),
+              const SizedBox(height: 24),
+              SectionHeader(title: settings.t('credits_header')),
+              SectionCredits(text: settings.t('credits')),
               const SizedBox(height: 24),
               SizedBox(
                 height: 50,

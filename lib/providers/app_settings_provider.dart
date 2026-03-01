@@ -93,7 +93,7 @@ class AppSettingsProvider extends ChangeNotifier {
   String currencySymbol() {
     switch (_currency) {
       case AppCurrency.pln:
-        return "PLN";
+        return "zł";
       case AppCurrency.eur:
         return "€";
     }
@@ -185,7 +185,7 @@ class AppSettingsProvider extends ChangeNotifier {
   }
 
   final Map<String, String> _plStrings = {
-    'app_name': 'SmartBudget',
+    'app_name': 'Smarter Budget',
     'add_transaction': 'Dodaj transakcję',
     'edit_transaction': 'Edytuj transakcję',
     'title': 'Tytuł',
@@ -267,6 +267,24 @@ class AppSettingsProvider extends ChangeNotifier {
     'step_review': 'Zapisz',
     'transaction_deleted': 'Usunięto transakcję',
     'undo': 'Cofnij',
+    'credits_header': 'Autorzy',
+    'credits':
+        'Autor: Aleksandra Zawadka\nKontrybucja: Paweł Szymański\nWersja 1.260228.0',
+    'categories': 'Kategorie',
+    'category_manager': 'Menadżer Kategorii',
+    'categories_uninitialized': 'Kategorie nie zostały wczytane',
+    'manage_categories': 'Zarządzaj kategoriami',
+    'manage_categories_subtext': 'Dodaj, zmień lub usuń kategorie',
+    'add_category': 'Dodaj kategorię',
+    'category_enter_name': 'Podaj nazwę',
+    'pick_color': 'Wybierz kolor:',
+    'pick_icon': 'Wybierz ikonkę:',
+    'pick_type': 'Wybierz rodzaj:',
+    'add': 'Dodaj',
+    'done': 'Gotowe',
+    'warning_empty_text_field': 'Pole nie może być puste',
+    'warning_such_category_exists': 'Ta kategoria już istnieje',
+    'no_categories': 'Brak kategorii.',
 
     // Kategorie
     'Food': 'Jedzenie',
@@ -283,7 +301,7 @@ class AppSettingsProvider extends ChangeNotifier {
   };
 
   final Map<String, String> _enStrings = {
-    'app_name': 'SmartBudget',
+    'app_name': 'Smarter Budget',
     'add_transaction': 'Add Transaction',
     'edit_transaction': 'Edit Transaction',
     'title': 'Title',
@@ -365,6 +383,24 @@ class AppSettingsProvider extends ChangeNotifier {
     'step_review': 'Review',
     'transaction_deleted': 'Transaction deleted',
     'undo': 'Undo',
+    'credits_header': 'Credits',
+    'credits':
+        'Author: Aleksandra Zawadka\nContribution: Paweł Szymański\nVersion 1.260228.0',
+    'categories': 'Categories',
+    'category_manager': 'Category Manager',
+    'categories_uninitialized': "Categories couldn't initialize",
+    'manage_categories': 'Manage categories',
+    'manage_categories_subtext': 'Add, change or remove categories',
+    'add_category': 'Add category',
+    'category_enter_name': 'Enter name',
+    'pick_color': 'Pick color:',
+    'pick_icon': 'Pick icon:',
+    'pick_type': 'Pick type:',
+    'add': 'Add',
+    'done': 'Done',
+    'warning_empty_text_field': 'Field cannot be empty',
+    'warning_such_category_exists': 'Such category already exists',
+    'no_categories': 'No categories found.',
 
     // Categories
     'Food': 'Food',
