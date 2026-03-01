@@ -2,7 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:smart_budget/models/category.dart';
 import '../providers/app_settings_provider.dart';
 import '../providers/category_provider.dart';
 import '../providers/user_provider.dart';

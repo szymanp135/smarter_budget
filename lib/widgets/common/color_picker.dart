@@ -1,7 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:smart_budget/providers/app_settings_provider.dart';
+import 'package:smarter_budget/providers/app_settings_provider.dart';
 
 Future<Color> showColorPickerDialog(
   BuildContext context,

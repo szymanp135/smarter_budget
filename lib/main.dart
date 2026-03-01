@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:smart_budget/providers/category_provider.dart';
+import 'package:smarter_budget/providers/category_provider.dart';
 
 import 'models/category.dart';
 import 'models/transaction.dart';

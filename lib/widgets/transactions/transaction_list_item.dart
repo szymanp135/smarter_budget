@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
-import 'package:smart_budget/providers/category_provider.dart';
+import 'package:smarter_budget/providers/category_provider.dart';
 import '../../models/transaction.dart';
 import '../../providers/app_settings_provider.dart';
 

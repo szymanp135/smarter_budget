@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:smart_budget/providers/category_provider.dart';
-import 'package:smart_budget/screens/categories_manager_screen.dart';
+import 'package:smarter_budget/providers/category_provider.dart';
+import 'package:smarter_budget/screens/categories_manager_screen.dart';
 
 import '../providers/app_settings_provider.dart';
 import '../providers/user_provider.dart';

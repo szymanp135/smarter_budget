@@ -1,10 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smart_budget/models/category.dart';
-import 'package:smart_budget/providers/category_provider.dart';
-import 'package:smart_budget/providers/user_provider.dart';
-import 'package:smart_budget/widgets/categories/category_form_dialog.dart';
+import 'package:smarter_budget/models/category.dart';
+import 'package:smarter_budget/providers/category_provider.dart';
+import 'package:smarter_budget/providers/user_provider.dart';
+import 'package:smarter_budget/widgets/categories/category_form_dialog.dart';
 
 import '../providers/app_settings_provider.dart';
 import '../widgets/categories/category_list_item.dart';

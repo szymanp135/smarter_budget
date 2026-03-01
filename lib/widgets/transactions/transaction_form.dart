@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:smart_budget/models/category.dart';
-import 'package:smart_budget/providers/category_provider.dart';
+import 'package:smarter_budget/models/category.dart';
+import 'package:smarter_budget/providers/category_provider.dart';
 import '../../models/transaction.dart';
 import '../../providers/app_settings_provider.dart';
 import 'form/transaction_type_selector.dart';

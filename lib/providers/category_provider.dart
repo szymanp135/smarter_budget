@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:smart_budget/providers/user_provider.dart';
+import 'package:smarter_budget/providers/user_provider.dart';
 
 import '../models/category.dart';
 

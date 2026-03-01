@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart_budget/models/category.dart';
+import 'package:smarter_budget/models/category.dart';
 import '../../../providers/app_settings_provider.dart';
 
 class TransactionSummary extends StatelessWidget {

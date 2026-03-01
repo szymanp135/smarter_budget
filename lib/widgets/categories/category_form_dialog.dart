@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iconpicker/Models/configuration.dart';
 import 'package:flutter_iconpicker/flutter_iconpicker.dart';
-import 'package:smart_budget/models/category.dart';
-import 'package:smart_budget/providers/app_settings_provider.dart';
-import 'package:smart_budget/providers/category_provider.dart';
-import 'package:smart_budget/widgets/common/color_picker.dart';
+import 'package:smarter_budget/models/category.dart';
+import 'package:smarter_budget/providers/app_settings_provider.dart';
+import 'package:smarter_budget/providers/category_provider.dart';
+import 'package:smarter_budget/widgets/common/color_picker.dart';
 
 Future<void> showCategoryFormDialog({
   required BuildContext context,
