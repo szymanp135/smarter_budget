@@ -29,6 +29,9 @@ Future<void> showCategoryFormDialog({
 
   // category type stuff
   CategoryType categoryType = CategoryType.income;
+  if (category != null && category.type == 'expense') {
+    categoryType = CategoryType.expense;
+  }
 
   await showDialog(
     context: context,

@@ -86,7 +86,8 @@ class TransactionListItem extends StatelessWidget {
                     ),
                     if (showSubtitle)
                       Text(
-                        category?.displayName ?? 'unknown category',
+                        category?.displayName ??
+                            'unknown category (id: ${transaction.categoryId})',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -97,17 +98,15 @@ class TransactionListItem extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  '${converted.toStringAsFixed(2)} $symbol',
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: isIncome ? Colors.green : Colors.red,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Text(
+                '${converted.toStringAsFixed(2)} $symbol',
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isIncome ? Colors.green : Colors.red,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
