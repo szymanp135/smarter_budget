@@ -20,6 +20,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Cache Flutter
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.flutter
+          key: flutter-${{ runner.os }}-stable
+          restore-keys: |
+            flutter-${{ runner.os }}
+
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -27,6 +36,15 @@ jobs:
 
       - name: Flutter version
         run: flutter --version
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}
 
       - name: Install dependencies
         run: flutter pub get
