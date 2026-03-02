@@ -47,12 +47,12 @@ class CategoriesManagerScreen extends StatelessWidget {
     );
   }
 
-  void deleteCategory({
+  bool deleteCategory({
     required CategoryProvider categoryProvider,
     required BudgetCategory category,
     required UserProvider userProvider,
   }) {
-    categoryProvider.deleteCategory(
+    return categoryProvider.deleteCategory(
       categoryId: category.id,
       userProvider: userProvider,
     );
@@ -101,12 +101,11 @@ class CategoriesManagerScreen extends StatelessWidget {
       );
       return false;
     } else if (direction == DismissDirection.endToStart) {
-      deleteCategory(
+      return deleteCategory(
         categoryProvider: categoryProvider,
         category: category,
         userProvider: userProvider,
       );
-      return true;
     }
     return true;
   }
