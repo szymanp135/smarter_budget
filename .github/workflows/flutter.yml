@@ -11,19 +11,7 @@ jobs:
     runs-on: ubuntu-lastest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      # removed java installation
-
-      - name: Cache Flutter
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.flutter
-          key: flutter-${{ runner.os }}-stable
-          restore-keys: |
-            flutter-${{ runner.os }}
+      - uses: actions/checkout@v3
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2
@@ -33,17 +21,11 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
-      - name: Cache pub packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            pub-${{ runner.os }}
-
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Get icons
+        run: dart run flutter_iconpicker:generate_packs --packs roundedMaterial
 
       - name: Check Dart formatting
         run: dart format --set-exit-if-changed .
@@ -51,10 +33,8 @@ jobs:
       - name: Analyze project
         run: flutter analyze
 
-      # TODO: Add some tests
-
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
