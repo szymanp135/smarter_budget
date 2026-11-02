@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:smarter_budget/providers/user_provider.dart';
@@ -201,6 +203,40 @@ class CategoryProvider extends ChangeNotifier {
     }
 
     return box.get(categoryKey);
+  }
+
+  String exportToJson() {
+    final box = categoriesBox;
+    if (box == null || box.isEmpty) return '[]';
+
+    final list = box.values.map((cat) => cat.toJson()).toList();
+    return jsonEncode(list);
+  }
+
+  Future<void> importFromJson(String jsonString) async {
+    final box = categoriesBox;
+    if (box == null) return;
+
+    try {
+      final List<dynamic> decoded = jsonDecode(jsonString);
+
+      for (var item in decoded) {
+        if (item is Map<String, dynamic>) {
+          final category = BudgetCategory.fromJson(item);
+
+          dynamic key = getCategoryKey(category.id);
+          if (key != null) {
+            box.put(key, category);
+          } else {
+            box.add(category);
+          }
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Błąd parsowania JSON dla kategorii: $e');
+      rethrow;
+    }
   }
 
   final Map<String, (String, IconData, Color, String)>

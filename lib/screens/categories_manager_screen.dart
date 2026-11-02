@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smarter_budget/models/category.dart';
@@ -10,6 +14,70 @@ import '../widgets/categories/category_list_item.dart';
 
 class CategoriesManagerScreen extends StatelessWidget {
   const CategoriesManagerScreen({super.key});
+
+  Future<void> _exportCategories(
+    BuildContext context,
+    CategoryProvider provider,
+    AppSettingsProvider settings,
+  ) async {
+    try {
+      final jsonString = provider.exportToJson();
+
+      String? outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: settings.t('categories_backup'),
+        fileName: 'categories_backup.json',
+        bytes: utf8.encode(jsonString),
+      );
+
+      if (outputPath != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(settings.t('categories_backup_done'))),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${settings.t('categories_backup_error')}: $e'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _importCategories(
+    BuildContext context,
+    CategoryProvider provider,
+    AppSettingsProvider settings,
+  ) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final jsonString = await file.readAsString();
+
+        await provider.importFromJson(jsonString);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(settings.t('categories_backup_imported'))),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${settings.t('categories_backup_import_error')}.'),
+          ),
+        );
+      }
+    }
+  }
 
   Widget categoryCard(BudgetCategory category) {
     return Padding(
@@ -118,7 +186,21 @@ class CategoriesManagerScreen extends StatelessWidget {
     final categoryBox = categories.categoriesBox;
 
     return Scaffold(
-      appBar: AppBar(title: Text(settings.t('category_manager'))),
+      appBar: AppBar(
+        title: Text(settings.t('category_manager')),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download_rounded),
+            tooltip: settings.t('categories_export'),
+            onPressed: () => _exportCategories(context, categories, settings),
+          ),
+          IconButton(
+            icon: const Icon(Icons.upload_file_rounded),
+            tooltip: settings.t('categories_import'),
+            onPressed: () => _importCategories(context, categories, settings),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await showCategoryFormDialog(

@@ -26,4 +26,22 @@ class BudgetCategory {
     required this.colorValue,
     required this.type,
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'displayName': displayName,
+    'iconCodePoint': iconCodePoint,
+    'colorValue': colorValue,
+    'type': type,
+  };
+
+  factory BudgetCategory.fromJson(Map<String, dynamic> json) {
+    return BudgetCategory(
+      id: json['id'] ?? '',
+      displayName: json['displayName'] ?? '',
+      iconCodePoint: json['iconCodePoint'] ?? 0,
+      colorValue: json['colorValue'] ?? 0,
+      type: json['type'] ?? 'expense',
+    );
+  }
 }
