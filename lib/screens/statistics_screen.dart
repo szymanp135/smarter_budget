@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart'; // Dodany import Hive
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
@@ -29,6 +30,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   Set<String> _selectedCategoryIds = {};
   bool _isInitialized = false;
 
+  // Metoda pomocnicza do zapisu wyboru w Hive
+  void _saveSelectedCategories() {
+    try {
+      final box = Hive.box(
+        'settings',
+      ); // Zmień nazwę boxa, jeśli używasz innej w aplikacji
+      box.put('selected_statistics_categories', _selectedCategoryIds.toList());
+    } catch (e) {
+      debugPrint('Błąd zapisu kategorii do Hive: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
@@ -38,8 +51,25 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
     final allTransactions = userProv.transactionsBox?.values.toList() ?? [];
 
-    if (!_isInitialized && allTransactions.isNotEmpty) {
-      _selectedCategoryIds = allTransactions.map((tx) => tx.categoryId).toSet();
+    // Inicjalizacja i odczyt zapisanego stanu z Hive
+    if (!_isInitialized) {
+      try {
+        final box = Hive.box('settings');
+        final savedList = box.get('selected_statistics_categories');
+        if (savedList != null) {
+          _selectedCategoryIds = Set<String>.from(savedList);
+        } else if (allTransactions.isNotEmpty) {
+          _selectedCategoryIds = allTransactions
+              .map((tx) => tx.categoryId)
+              .toSet();
+        }
+      } catch (e) {
+        if (allTransactions.isNotEmpty) {
+          _selectedCategoryIds = allTransactions
+              .map((tx) => tx.categoryId)
+              .toSet();
+        }
+      }
       _isInitialized = true;
     }
 
@@ -283,6 +313,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                       } else {
                                         _selectedCategoryIds.remove(catId);
                                       }
+                                      _saveSelectedCategories(); // Zapis do Hive
                                     });
                                   });
                                 },
@@ -609,7 +640,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           fontSize: 10.0,
           fontWeight: FontWeight.bold,
           color: Colors.white,
-          shadows: [Shadow(color: Colors.black26, blurRadius: 2)],
         ),
         badgeWidget: isTouched
             ? _buildPieTooltip(context, entry, percentage, settings)

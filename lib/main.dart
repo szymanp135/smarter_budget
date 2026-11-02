@@ -30,6 +30,7 @@ void main() async {
   Hive.registerAdapter(BudgetCategoryAdapter());
 
   await Hive.openBox('users');
+  await Hive.openBox('settings');
 
   runApp(
     MultiProvider(
