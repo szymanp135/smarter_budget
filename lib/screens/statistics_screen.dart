@@ -26,13 +26,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   String _pieChartType = 'expense';
   int _touchedPieIndex = -1;
 
+  Set<String> _selectedCategoryIds = {};
+  bool _isInitialized = false;
+
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
     final userProv = Provider.of<UserProvider>(context);
+    final categoryProv = Provider.of<CategoryProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
 
     final allTransactions = userProv.transactionsBox?.values.toList() ?? [];
+
+    if (!_isInitialized && allTransactions.isNotEmpty) {
+      _selectedCategoryIds = allTransactions.map((tx) => tx.categoryId).toSet();
+      _isInitialized = true;
+    }
+
     final startDate = _calculateStartDate(_selectedRange, allTransactions);
 
     final filteredTransactions = allTransactions
@@ -40,6 +50,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           (tx) =>
               tx.date.isAfter(startDate) || tx.date.isAtSameMomentAs(startDate),
         )
+        .where((tx) => _selectedCategoryIds.contains(tx.categoryId))
         .toList();
 
     double totalIncome = 0;
@@ -56,7 +67,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final double balance = totalIncome - totalExpense;
 
     final chartData = _generateBarChartData(
-      allTransactions,
+      filteredTransactions,
       _selectedRange,
       settings,
     );
@@ -64,6 +75,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     const double minBarGroupWidth = 50.0;
     const double horizontalPadding = 32.0;
     double calculatedWidth = chartData.groups.length * minBarGroupWidth;
+
     double finalChartWidth = math.max(
       screenWidth - horizontalPadding,
       calculatedWidth,
@@ -73,6 +85,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         .where((tx) => tx.type == _pieChartType)
         .toList();
     final pieData = _generatePieChartData(pieTransactions, settings);
+
+    final uniqueCategoryIds = allTransactions
+        .map((tx) => tx.categoryId)
+        .toSet();
 
     return Scaffold(
       body: SafeArea(
@@ -94,6 +110,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 selectedRange: _selectedRange,
                 onRangeChanged: (val) => setState(() => _selectedRange = val),
                 settings: settings,
+              ),
+              const SizedBox(height: 16),
+              _buildCategoryFilterButton(
+                context,
+                uniqueCategoryIds,
+                categoryProv,
+                settings,
               ),
               const SizedBox(height: 24),
               SavingsCard(
@@ -122,7 +145,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     groups: chartData.groups,
                     labels: chartData.labels,
                     settings: settings,
-                    uniqueKey: _selectedRange,
+                    uniqueKey:
+                        '$_selectedRange-${_selectedCategoryIds.hashCode}',
                   ),
                 ),
               ),
@@ -151,13 +175,127 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 sections: _generatePieSections(context, pieData, settings),
                 pieData: pieData,
                 settings: settings,
-                uniqueKey: '$_selectedRange-$_pieChartType',
+                uniqueKey:
+                    '$_selectedRange-$_pieChartType-${_selectedCategoryIds.hashCode}',
                 onTouch: (index) => setState(() => _touchedPieIndex = index),
               ),
+              const SizedBox(height: 32),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCategoryFilterButton(
+    BuildContext context,
+    Set<String> uniqueCategoryIds,
+    CategoryProvider categoryProv,
+    AppSettingsProvider settings,
+  ) {
+    return OutlinedButton.icon(
+      onPressed: () => _showCategoryFilterSheet(
+        context,
+        uniqueCategoryIds,
+        categoryProv,
+        settings,
+      ),
+      icon: const Icon(Icons.filter_list, size: 18),
+      label: Text(
+        '${settings.t('categories_chosen')}: ${_selectedCategoryIds.length}/${uniqueCategoryIds.length}',
+      ),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  void _showCategoryFilterSheet(
+    BuildContext context,
+    Set<String> categoryIds,
+    CategoryProvider categoryProv,
+    AppSettingsProvider settings,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setStateSheet) {
+            final sortedIds = categoryIds.toList();
+            return Container(
+              padding: const EdgeInsets.all(16),
+              height: math.min(MediaQuery.of(context).size.height * 0.6, 450),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        settings.t('statistics_choose_categories'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  Expanded(
+                    child: sortedIds.isEmpty
+                        ? Center(
+                            child: Text(settings.t('history_no_categories')),
+                          )
+                        : ListView.builder(
+                            itemCount: sortedIds.length,
+                            itemBuilder: (context, index) {
+                              final catId = sortedIds[index];
+                              final category = categoryProv.getCategoryById(
+                                catId,
+                              );
+                              final isSelected = _selectedCategoryIds.contains(
+                                catId,
+                              );
+                              final categoryColor = Color(
+                                category?.colorValue ?? Colors.grey.toARGB32(),
+                              );
+
+                              return CheckboxListTile(
+                                title: Text(
+                                  category?.displayName ??
+                                      settings.t('unknown'),
+                                ),
+                                secondary: CircleAvatar(
+                                  backgroundColor: categoryColor,
+                                  radius: 12,
+                                ),
+                                value: isSelected,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    setStateSheet(() {
+                                      if (value == true) {
+                                        _selectedCategoryIds.add(catId);
+                                      } else {
+                                        _selectedCategoryIds.remove(catId);
+                                      }
+                                    });
+                                  });
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -190,7 +328,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     ).getCategoryById(entry.key);
     final categoryColor = Color(category?.colorValue ?? Colors.grey.toARGB32());
     return Container(
-      //constraints: const BoxConstraints(maxWidth: 120),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.blueGrey.shade900.withValues(alpha: 0.95),
@@ -265,7 +402,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   _BarChartDataWrapper _generateBarChartData(
-    List<Transaction> allTransactions,
+    List<Transaction> transactions,
     TimeRange range,
     AppSettingsProvider settings,
   ) {
@@ -274,8 +411,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final List<BarChartGroupData> groups = [];
 
     if (range == TimeRange.all) {
-      if (allTransactions.isEmpty) return _BarChartDataWrapper([], []);
-      int startYear = allTransactions.fold(
+      if (transactions.isEmpty) return _BarChartDataWrapper([], []);
+      int startYear = transactions.fold(
         DateTime.now().year,
         (prev, tx) => tx.date.year < prev ? tx.date.year : prev,
       );
@@ -285,7 +422,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         grouped[y.toString()] = _Stats();
       }
 
-      for (var tx in allTransactions) {
+      for (var tx in transactions) {
         final key = tx.date.year.toString();
         if (grouped.containsKey(key)) {
           final amount = settings.convertAmount(tx.amount);
@@ -313,7 +450,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         grouped[d.toString()] = _Stats();
       }
 
-      final filteredTxs = allTransactions.where(
+      final filteredTxs = transactions.where(
         (tx) => (tx.date.year == now.year && tx.date.month == now.month),
       );
 
@@ -336,7 +473,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         groups.add(_createBarGroup(d - 1, stats.income, stats.expense));
       }
     } else {
-      final startDate = _calculateStartDate(range, allTransactions);
+      final startDate = _calculateStartDate(range, transactions);
       final locale = settings.language == AppLanguage.pl ? 'pl_PL' : 'en_US';
       final now = DateTime.now();
       final endDate = DateTime(now.year, now.month + 1, 0);
@@ -356,7 +493,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         iterator = DateTime(iterator.year, iterator.month + 1, 1);
       }
 
-      final filteredTxs = allTransactions.where(
+      final filteredTxs = transactions.where(
         (tx) =>
             tx.date.isAfter(startDate) || tx.date.isAtSameMomentAs(startDate),
       );
@@ -383,12 +520,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         final month = int.parse(key.split('-')[1]);
         final date = DateTime(year, month);
         String label = DateFormat.MMM(locale).format(date);
-
-        if (differentYears && (month == 1 || range == TimeRange.year1)) {
-          label += "\n'${year.toString().substring(2)}";
-        } else if (differentYears) {
-          label += "\n'${year.toString().substring(2)}";
-        }
 
         if (differentYears) {
           label =
@@ -459,7 +590,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     return List.generate(data.length, (i) {
       final isTouched = i == _touchedPieIndex;
       final entry = data[i];
-      final percentage = entry.value / totalSum * 100;
+      final percentage = totalSum > 0 ? (entry.value / totalSum * 100) : 0.0;
       final radius = isTouched ? 60.0 : 55.0;
 
       final showLabel = percentage > 5;
