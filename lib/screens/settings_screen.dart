@@ -4,6 +4,7 @@ import 'package:csv/csv.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:smarter_budget/providers/category_provider.dart';
@@ -71,20 +72,11 @@ class SettingsScreen extends StatelessWidget {
       String savedPath = "";
 
       if (Platform.isAndroid) {
-        final directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          savedPath = await FileSaver.instance.saveFile(
-            name: fileName,
-            bytes: dataToSave,
-            ext: 'csv',
-            mimeType: MimeType.csv,
-          );
-        } else {
-          final path = '${directory.path}/$fileName.csv';
-          final file = File(path);
-          await file.writeAsBytes(dataToSave);
-          savedPath = path;
-        }
+        final directory = await getExternalStorageDirectory();
+        final path = '${directory?.path}/$fileName.csv';
+        final file = File(path);
+        await file.writeAsBytes(dataToSave);
+        savedPath = path;
       } else {
         savedPath = await FileSaver.instance.saveFile(
           name: fileName,
