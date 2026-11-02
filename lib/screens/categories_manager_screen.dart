@@ -79,6 +79,10 @@ class CategoriesManagerScreen extends StatelessWidget {
     }
   }
 
+  IconData _getIconData(int codePoint) {
+    return IconData(codePoint, fontFamily: 'MaterialIcons');
+  }
+
   Widget categoryCard(BudgetCategory category) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -90,7 +94,7 @@ class CategoriesManagerScreen extends StatelessWidget {
             children: [
               SizedBox(width: 8),
               Icon(
-                IconData(category.iconCodePoint, fontFamily: 'MaterialIcons'),
+                _getIconData(category.iconCodePoint),
                 color: Color(category.colorValue),
               ),
               SizedBox(width: 8),
